@@ -86,7 +86,7 @@ function App() {
       )}
 
       { !loadingChats && chats.length > 0 && (
-          <ul className="SEOForm">
+          <ul className="remove-item-list">
             {
               chats.map((chat) => (
                 <li className="remove-item">
