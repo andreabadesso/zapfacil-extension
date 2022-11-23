@@ -1,8 +1,17 @@
+/**
+ * This is the content script that runs in the same context of the ZapFacil UI,
+ * it can interact with the document and window object and also communicate (by
+ * message passing) with the popup script.
+ */
+
 import {
   DOMMessage,
   DOMMessageResponse,
 } from '../types';
 
+/**
+ * This will call the finished-dialog API from ZapFacil
+ */
 const removeChat = async (token: string, chat: any): Promise<void> => {
   const payload = JSON.stringify({
     protocol: chat.protocol,
@@ -24,6 +33,27 @@ const removeChat = async (token: string, chat: any): Promise<void> => {
   const response = await fetch('https://api.painel.zapfacil.com/api/dialogLeads/finished-dialog', requestOptions);
 };
 
+/**
+ * A JWT token is stored as a cookie on the browser, this method fetches it.
+ *
+ * This is an example with random values but correct keys:
+ * ```json
+ * {
+ *    "unique_name": "User Name",
+ *    "role": "UserRole",
+ *    "primarysid": "228",
+ *    "certserialnumber": "1999-1888-1929-aef1-c1a211e1df17",
+ *    "authmethod": "JWT",
+ *    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/country": "Invariant Country",
+ *    "groupsid": "1111",
+ *    "nbf": 1669141111,
+ *    "exp": 1669231111,
+ *    "iat": 1669141111,
+ *    "iss": "zapfacil-api",
+ *    "aud": "zapfacil-clients"
+ *  }
+ *  ```
+ */
 const getToken = () => {
   return document.cookie
     .split('; ')
@@ -52,7 +82,15 @@ const handleMessage = async (type: string, data?: any): Promise<DOMMessageRespon
     return Promise.resolve(response);
   }
 
+  // type === LOAD_CHATS
   return new Promise((resolve, reject) => {
+    /**
+     * I wasn't able to get the vue object from this content script, so this is a 
+     * gambi I came up with, I'm injecting a script on the ZapFacil UI that gets
+     * the potential list from the Vuex store (described in src/inject.ts) and sends
+     * back a message (using window.postMessage) so we can use it here. Ugly as hell,
+     * but its working
+     */
     const eventListener = (event: any) => {
       if (event.data.type === 'from-injected-script') {
         const potentialList = event.data.data;
@@ -82,12 +120,12 @@ const messagesFromReactAppListener = (
   _sender: chrome.runtime.MessageSender,
   sendResponse: (response: DOMMessageResponse) => void,
 ) => {
-
   handleMessage(msg.type, msg.data)
     .then((response: DOMMessageResponse) => {
       sendResponse(response);
     })
 
+  // return true so chrome knows we will async send a response
   return true;
 };
 
