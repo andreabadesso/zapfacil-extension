@@ -93,10 +93,16 @@ const handleMessage = async (type: string, data?: any): Promise<DOMMessageRespon
      */
     const eventListener = (event: any) => {
       if (event.data.type === 'from-injected-script') {
-        const potentialList = event.data.data;
+        const {
+          potentialList,
+          pendingList,
+        } = event.data.data;
 
         const response: DOMMessageResponse = {
-          data: potentialList,
+          data: {
+            potentialList,
+            pendingList,
+          }
         };
 
         resolve(response);

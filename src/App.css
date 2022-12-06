@@ -66,3 +66,18 @@
   margin-right: 16px;
   border-radius: 18px;
 }
+
+.options-menu {
+  margin-top: 21px;
+  display: flex;
+  flex-direction: row;
+}
+
+.tab-select {
+  height: 21px;
+  margin-right: 9px;
+}
+
+h1 {
+  font-size: 12px;
+}

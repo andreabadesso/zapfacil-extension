@@ -6,6 +6,7 @@ function App() {
   const [chats, setChats] = React.useState([]);
   const [loadingChats, setLoadingChats] = React.useState(false);
   const [loadingRemoving, setLoadingRemoving] = React.useState(false);
+  const [selectedTab, setSelectedTab] = React.useState('potentialList');
 
   const sendMessage = (type: string, data?: any): Promise<DOMMessageResponse> => {
     return new Promise((resolve) => {
@@ -36,14 +37,17 @@ function App() {
   };
 
   const loadChats = React.useCallback(() => {
+    setLoadingChats(true);
     sendMessage('LOAD_CHATS')
       .then(({ data }) => {
-        setChats(data);
-      })
-  }, [setChats]);
+        setLoadingChats(false);
+        setChats(data[selectedTab]);
+      });
+  }, [setChats, selectedTab]);
 
   const removeChats = React.useCallback(() => {
     setLoadingRemoving(true);
+
     sendMessage('REMOVE_CHATS', chats)
       .then(() => {
         // We need to give some time for the zapfacil screen to update
@@ -53,6 +57,11 @@ function App() {
         }, 1000);
       })
   }, [loadChats, chats]);
+
+  const handleSelectChange = React.useCallback((e) => {
+    setSelectedTab(e.target.value);
+    setChats([]);
+  }, [setSelectedTab, setChats]);
   
   return (
     <div className="App">
@@ -61,25 +70,32 @@ function App() {
         <h1>SuperFrete - ZapFacil Tools</h1>
       </div>
 
-      <button className="btn clean-btn" onClick={loadChats}>
-        Carregar pendentes
-      </button>
+      <div className="options-menu">
+        <select value={selectedTab} onChange={handleSelectChange} className="tab-select">
+          <option value="potentialList">Potencial</option>
+          <option value="pendingList">Pendente</option>
+        </select>
 
-      {
-        chats.length > 0 && !loadingRemoving && (
-          <button className="btn remove-all" onClick={removeChats}>
-            Remover todos
-          </button>
-        )
-      }
+        <button className="btn clean-btn" onClick={loadChats}>
+          Carregar
+        </button>
 
-      {
-        loadingRemoving && (
-          <button className="btn remove-all loading">
-            Removendo...
-          </button>
-        )
-      }
+        {
+          chats.length > 0 && !loadingRemoving && (
+            <button className="btn remove-all" onClick={removeChats}>
+              Remover todos
+            </button>
+          )
+        }
+
+        {
+          loadingRemoving && (
+            <button className="btn remove-all loading">
+              Removendo...
+            </button>
+          )
+        }
+      </div>
 
       { loadingChats && (
         <p>Carregando...</p>
