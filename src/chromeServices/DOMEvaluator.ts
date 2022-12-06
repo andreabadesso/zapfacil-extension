@@ -9,6 +9,9 @@ import {
   DOMMessageResponse,
 } from '../types';
 
+const MIN_RANDOM = 1000; // Min 1s to wait between server calls
+const MAX_RANDOM = 3000;
+
 /**
  * This will call the finished-dialog API from ZapFacil
  */
@@ -61,6 +64,12 @@ const getToken = () => {
     ?.split('=')[1] as string;
 }
 
+const sleep = async (milliseconds: number) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, milliseconds)
+  });
+};
+
 const handleMessage = async (type: string, data?: any): Promise<DOMMessageResponse> => {
   if (type === 'GET_TOKEN') {
     const token = getToken();
@@ -73,6 +82,9 @@ const handleMessage = async (type: string, data?: any): Promise<DOMMessageRespon
   } else if (type === 'REMOVE_CHATS') {
     for (const chat of data) {
       await removeChat(getToken(), chat);
+      const randomSleepTime = Math.ceil(Math.random() * (MAX_RANDOM - MIN_RANDOM + 1) + MIN_RANDOM)
+      console.log(`Sleeping for ${randomSleepTime}ms`);
+      await sleep(randomSleepTime);
     }
 
     const response: DOMMessageResponse = {

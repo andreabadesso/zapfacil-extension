@@ -8,12 +8,16 @@ import { DOMMessage, } from './types';
  */
 // @ts-ignore
 const vue = document.querySelectorAll('#white-label')[0].__vue__;
-const potentialList = vue.$store.getters['chat/getQueueWaiting'];
+const pendingList = vue.$store.getters['chat/getQueueWaiting'];
+const potentialList = vue.$store.getters['chat/getQueuePotential'];
 
 /**
  * Post the list back to the content script
  */
 window.postMessage({
   type: 'from-injected-script',
-  data: potentialList,
+  data: {
+    pendingList,
+    potentialList,
+  },
 }, '*');
